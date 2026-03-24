@@ -1,53 +1,33 @@
 clear;close all
-% load("data/new_weighted_prod_graphs_wosignals_2ba20_2ba25_w201.mat")
-% load("data/new_weighted_prod_graphs_wosignals_03er32_03er32_w201.mat")
-% load("data/weighted_sp_graphs_wosignals_03er20_03er25_w21.mat")
-% load("data/weighted_sp_graphs_wosignals_2ba20_2ba25_w21.mat")
-% load("data/weighted_sp_graphs_wosksglignals_201ws20_201ws25_w21.mat")
-% load("data/weighted_sp_graphs_wosignals_45grid20_55grid25_w21.mat")
+%% set up parameters
+addpath("../")
+addpath("../baselines");
+addpath("../utils")
+N1 = 20;
+N2 = 25;
+N = N1*N2;
+p1 = N1*(N1-1)/2;
+p2 = N2*(N2-1)/2;
+upper = 2; % range of edge weights
+lower = 0.1;
+model = 'er'; % 'pa', 'ws', 'grid'
+filter = 'gmrf';
+pd_type = 'strong'; %'tensor'; %
+nreplicate = 10;
+Ms = [10,100,1000,10000,100000]; % number of graph signals
 
-% load("data/new_weighted_prod_graphs_wosignals_03er20_03er25_w201.mat")
-load("data/new_weighted_prod_graphs_wosignals_2ba20_2ba25_w201.mat")
-%% Generate a graph
-nreplicate = 50; % repeat the same experiment (based on different graphs)
+%% load
+filename = join([pd_type,"_prod_",model,"_N1=",num2str(N1),"_N2=",num2str(N2),"_weight=[",num2str(lower),",",num2str(upper),"].mat"],"");
+load(filename)
 
+%% set up the baselines
 baselines.pst = 0;
 baselines.rpgl = 0;
-baselines.ksgl = 1;
 baselines.ff = 0;
 baselines.kglasso = 0;
 baselines.teralasso = 0;
 baselines.mwgl = 0;
-mask_and_impute = 0;
-load_saved = 0;
-eval = 1;
-filter = 'gmrf';
-pd_type = 'strong'; %'tensor'; %
-
-N1 = 20;
-N2 = 25;
-
-N = N1*N2;
-
-p1 = N1*(N1-1)/2;
-p2 = N2*(N2-1)/2;
-
-Ms = 10*2.^(0:10);
-
-L0s = [data{1:nreplicate,2}];
-L0s = reshape(L0s,N,N,[]);
-L0s = permute(L0s,[3,1,2]);
-Lp1_0s = [data{1:nreplicate,4}];
-Lp2_0s = [data{1:nreplicate,6}];
-Lp1_0s = reshape(Lp1_0s,N1,N1,[]);
-Lp1_0s = permute(Lp1_0s,[3,1,2]);
-Lp2_0s = reshape(Lp2_0s,N2,N2,[]);
-Lp2_0s = permute(Lp2_0s,[3,1,2]);
-
-L0s = parallel.pool.Constant(L0s);
-Lp1_0s = parallel.pool.Constant(Lp1_0s);
-Lp2_0s = parallel.pool.Constant(Lp2_0s);
-
+baselines.ksgl = 1;
 for k = 1:length(Ms)
 
 M = Ms(k);
@@ -239,7 +219,7 @@ if baselines.ksgl == 1
         param.pd_type = pd_type;
         param.inv_compute = 'eig';
         param.optim = "alternate";
-        param.max_iter = 20000;
+        param.max_iter = 20;%000;
         param.step_size = 1e-3;
         param.tol = 1e-5;
         while true
@@ -261,47 +241,39 @@ end
 
 %% performance
 
-if eval == 1
+if baselines.pst == 1
+    res1_pst_graphs1(:,:,k) = graphs1_pst;
+    res2_pst_graphs2(:,:,k) = graphs2_pst;
+end
 
-    if baselines.pst == 1
-        res1_pst_graphs1(:,:,k) = graphs1_pst;
-        res2_pst_graphs2(:,:,k) = graphs2_pst;
-    end
+if baselines.rpgl == 1
+    res1_rpgl_graphs1(:,:,:,:,k) = graphs1_rpgl;
+    res2_rpgl_graphs2(:,:,:,:,k) = graphs2_rpgl;
+end
 
-    if baselines.rpgl == 1
-        res1_rpgl_graphs1(:,:,:,:,k) = graphs1_rpgl;
-        res2_rpgl_graphs2(:,:,:,:,k) = graphs2_rpgl;
-    end
+if baselines.ff == 1
+    res1_ff_graphs1(:,:,k) = graphs1_ff;
+    res2_ff_graphs2(:,:,k) = graphs2_ff;
+end
 
-    if baselines.bpgl == 1
-        res1_bpgl_graphs1(:,:,:,k) = graphs1_bpgl;
-        res2_bpgl_graphs2(:,:,:,k) = graphs2_bpgl;
-    end
+if baselines.kglasso == 1
+    res1_kglasso_graphs1(:,:,:,k) = graphs1_kglasso;
+    res2_kglasso_graphs2(:,:,:,k) = graphs2_kglasso;
+end
 
-    if baselines.ff == 1
-        res1_ff_graphs1(:,:,k) = graphs1_ff;
-        res2_ff_graphs2(:,:,k) = graphs2_ff;
-    end
+if baselines.teralasso == 1
+    res1_teralasso_graphs1(:,:,:,:,k) = graphs1_teralasso;
+    res2_teralasso_graphs2(:,:,:,:,k) = graphs2_teralasso;
+end
 
-    if baselines.kglasso == 1
-        res1_kglasso_graphs1(:,:,:,k) = graphs1_kglasso;
-        res2_kglasso_graphs2(:,:,:,k) = graphs2_kglasso;
-    end
+if baselines.mwgl == 1
+    res1_mwgl_graphs1(:,:,:,k) = graphs1_mwgl;
+    res2_mwgl_graphs2(:,:,:,k) = graphs2_mwgl;
+end
 
-    if baselines.teralasso == 1
-        res1_teralasso_graphs1(:,:,:,:,k) = graphs1_teralasso;
-        res2_teralasso_graphs2(:,:,:,:,k) = graphs2_teralasso;
-    end
-
-    if baselines.mwgl == 1
-        res1_mwgl_graphs1(:,:,:,k) = graphs1_mwgl;
-        res2_mwgl_graphs2(:,:,:,k) = graphs2_mwgl;
-    end
-
-    if baselines.ksgl == 1
-        res1_ksgl_graphs1(:,:,:,k) = graphs1_ksgl;
-        res2_ksgl_graphs2(:,:,:,k) = graphs2_ksgl;
-    end
+if baselines.ksgl == 1
+    res1_ksgl_graphs1(:,:,:,k) = graphs1_ksgl;
+    res2_ksgl_graphs2(:,:,:,k) = graphs2_ksgl;
 end
 
 end

@@ -1,5 +1,6 @@
 %%% run evaluation on the results from main
 addpath("../utils/metrics/")
+addpath("../utils/deltacon/")
 
 %% set up the baselines
 baselines.pst = 0;
@@ -10,7 +11,7 @@ baselines.teralasso = 0;
 baselines.mwgl = 0;
 baselines.ksgl = 1;
 filter = 'gmrf';
-prod = 'tensor'; %'strong' %
+prod = 'strong'; %'tensor'; %
 
 mmetric = 1; % the main metric to determine the best parameter
 

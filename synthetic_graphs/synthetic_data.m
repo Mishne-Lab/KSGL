@@ -6,7 +6,8 @@ N2 = 25;
 upper = 2; % range of edge weights
 lower = 0.1;
 model = 'er'; % 'pa', 'ws', 'grid'
-nreplicate = 50;
+nreplicate = 10;
+pd_type = 'strong';
 
 %% Generate graphs
 for ii = 1:nreplicate
@@ -76,5 +77,5 @@ for ii = 1:nreplicate
     data{ii,5} = Ap2_0;
     data{ii,6} = Lp2_0;
 end
-filename = join([model,"_N1=",num2str(N1),"_N2=",num2str(N2),"_weight=[",num2str(lower),",",num2str(upper),"].mat"],"");
+filename = join([pd_type,"_prod_",model,"_N1=",num2str(N1),"_N2=",num2str(N2),"_weight=[",num2str(lower),",",num2str(upper),"].mat"],"");
 save(filename, 'data')
